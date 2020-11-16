@@ -1,2 +1,2 @@
 # MeteoBot
-Scrape forecast data and send them via Slack Bot
+Web scrape forecast data and send them via Slack Bot
