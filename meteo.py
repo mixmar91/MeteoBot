@@ -109,7 +109,7 @@ def sendForecastReport(url, numberOfDataToSend):
                 break
 
         # send the forecast report as one message to the slack channel
-        slack.sendSlackMessage(configJson['LogBotToken'], configJson['TestChannel'],report)
+        slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],forecastReport)
     except:
         e = sys.exc_info()[0]
         slack.sendSlackMessage(configJson['ErrorBotToken'], configJson['LoggingChannel'],e)
