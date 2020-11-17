@@ -49,6 +49,9 @@ def sendForecastReport(url, numberOfDataToSend):
         # declare a counter to send only the 8 rows from the beginning
         sendMessageCounter = 0
 
+        # declare a variable for the forecast report
+        forecastReport = ""
+
         # loop all the forecast data
         for p in prognostika:
             
@@ -66,8 +69,8 @@ def sendForecastReport(url, numberOfDataToSend):
                 # create a string with day, day-number and month
                 dateText = " ".join([day,numberOfMonth,month])
 
-                # send date via slack
-                slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],dateText)
+                # add row with the date to the existing report
+                forecastReport+=(dateText+'\n')
                 dayListCounter+=1
                 printDate = False
 
@@ -93,8 +96,8 @@ def sendForecastReport(url, numberOfDataToSend):
                 logmessage = "Text "+text+" not found in dictionary."
                 slack.sendSlackMessage(configJson['LogBotToken'], configJson['LoggingChannel'],logmessage)
  
-            # send message with forecast row to slack channel
-            slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],message)
+            # add row with the current forecast to the existing report
+            forecastReport+=(message+'\n')
 
             # if the current hour is 23:00, then we should send the new date before we continue
             if hour == "23:00":
@@ -104,6 +107,9 @@ def sendForecastReport(url, numberOfDataToSend):
             sendMessageCounter+=1
             if sendMessageCounter == numberOfDataToSend:
                 break
+
+        # send the forecast report as one message to the slack channel
+        slack.sendSlackMessage(configJson['LogBotToken'], configJson['TestChannel'],report)
     except:
         e = sys.exc_info()[0]
         slack.sendSlackMessage(configJson['ErrorBotToken'], configJson['LoggingChannel'],e)
