@@ -54,7 +54,20 @@ def sendForecastReport(url, numberOfDataToSend):
             
             # send the date (if it is required) 
             if printDate:
-                slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],days[dayListCounter].get_text().splitlines()[0])
+                # isolate the day from html item and add the * at the beginng to start the bold format
+                day = "*"+days[dayListCounter].get_text().splitlines()[0].split(" ")[0].upper()
+
+                # isolate the number of month from html
+                numberOfMonth = ''.join(c for c in days[dayListCounter].get_text().splitlines()[0] if c.isdigit())
+                
+                # isolate the month from html and add the * to the end to terminate the bold format
+                month = days[dayListCounter].find("span",class_="monthNumbercf").get_text().replace(" ","")+"*"
+
+                # create a string with day, day-number and month
+                dateText = " ".join([day,numberOfMonth,month])
+
+                # send date via slack
+                slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],dateText)
                 dayListCounter+=1
                 printDate = False
 
@@ -80,7 +93,7 @@ def sendForecastReport(url, numberOfDataToSend):
                 logmessage = "Text "+text+" not found in dictionary."
                 slack.sendSlackMessage(configJson['LogBotToken'], configJson['LoggingChannel'],logmessage)
  
-            # send message with forect row to slack channel
+            # send message with forecast row to slack channel
             slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],message)
 
             # if the current hour is 23:00, then we should send the new date before we continue
