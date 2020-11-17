@@ -1,5 +1,9 @@
 {
     "MeteoBotToken": "xoxb-xxxxxxxxxxxxx-xxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "LogBotToken": "xoxb-xxxxxxxxxxxxx-xxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "ErrorBotToken": "xoxb-xxxxxxxxxxxxx-xxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx",
+
     "MeteoChannel":"#meteo-update",
+    "LoggingChannel":"#logging-channel",
     "TestChannel":"#test-channel"
 }
