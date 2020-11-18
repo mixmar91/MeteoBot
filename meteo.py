@@ -114,8 +114,26 @@ def sendForecastReport(url, numberOfDataToSend):
         e = sys.exc_info()[0]
         slack.sendSlackMessage(configJson['ErrorBotToken'], configJson['LoggingChannel'],e)
 
-
 if __name__ == '__main__':
-    url = 'https://www.meteo.gr/cf.cfm?city_id=89'
-    numberOfDataToSend = 8
+    if len(sys.argv)==3:
+        # get the first argument as city id
+        cityId = sys.argv[1]
+
+        # get the second argument as number of days to get the forecast
+        daysToScrape = int(sys.argv[2])
+        
+        # create meteo url
+        url= 'https://www.meteo.gr/cf.cfm?city_id='+cityId
+        
+        # each day have 8 row of data
+        numberOfDataToSend = 8*daysToScrape
+        
+        # meteo have forecast data only for the next 5 days
+        if numberOfDataToSend>43:
+            numberOfDataToSend = 43
+    else:
+        url = 'https://www.meteo.gr/cf.cfm?city_id=89'
+        numberOfDataToSend = 8
+
+    # call function to scrape data from meteo
     sendForecastReport(url,numberOfDataToSend)
