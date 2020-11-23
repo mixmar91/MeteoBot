@@ -8,29 +8,13 @@ from lxml import html, etree
 import slackAPI as slack
 import json
 import sys
+from meteoStaticData import meteoEmojiDictionary, hourDayList
 
 HEADERS = ({'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36','Accept-Language': 'en-US, en;q=0.5'})
-
-# meteo text to emoji dictionary
-meteoEmojiDictionary = {
-  "ΚΑΘΑΡΟΣ ": ":cleard:,:clearn:",
-  "ΛΙΓΑ ΣΥΝΝΕΦΑ ": ":fewcloudsd:,:fewcloudsn:",
-  "ΑΡΚΕΤΑ ΣΥΝΝΕΦΑ ": ":partlycloudyd:,:partlycloudyn:",
-  "ΑΡΑΙΗ ΣΥΝΝΕΦΙΑ ": ":thincloudsd:,:thincloudsn:",
-  "ΠΕΡΙΟΡΙΣΜΕΝΗ ΟΡΑΤΟΤΗΤΑ ": ":fog1:",
-  "ΣΥΝΝΕΦΙΑΣΜΕΝΟΣ ": ":cloudy:",
-  "ΑΣΘΕΝΗΣ ΒΡΟΧΗ ": ":lightrain:",
-  "ΒΡΟΧΗ ": ":rain:",
-  "ΚΑΤΑΙΓΙΔΑ ": ":storm:",
-  "ΧΙΟΝΙ ": ":snow:"
-}
 
 # read config json file
 with open('meteoConfig.json') as f:
   configJson = json.load(f)
-
-# list with every possible hour of day
-hourDayList = ["08:00", "11:00","14:00","17:00"]
 
 def sendForecastReport(url, numberOfDataToSend):
     try:
