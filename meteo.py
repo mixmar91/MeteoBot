@@ -16,7 +16,7 @@ meteoEmojiDictionary = {
   "ΚΑΘΑΡΟΣ ": ":cleard:,:clearn:",
   "ΛΙΓΑ ΣΥΝΝΕΦΑ ": ":fewcloudsd:,:fewcloudsn:",
   "ΑΡΚΕΤΑ ΣΥΝΝΕΦΑ ": ":partlycloudyd:,:partlycloudyn:",
-  "ΑΡΑΙΗ ΣΥΝΝΕΦΑ ": ":thincloudsd:,:thincloudsn:",
+  "ΑΡΑΙΗ ΣΥΝΝΕΦΙΑ ": ":thincloudsd:,:thincloudsn:",
   "ΠΕΡΙΟΡΙΣΜΕΝΗ ΟΡΑΤΟΤΗΤΑ ": ":fog1:",
   "ΣΥΝΝΕΦΙΑΣΜΕΝΟΣ ": ":cloudy:",
   "ΑΣΘΕΝΗΣ ΒΡΟΧΗ ": ":lightrain:",
@@ -54,8 +54,8 @@ def sendForecastReport(url, numberOfDataToSend):
 
         # loop all the forecast data
         for p in prognostika:
-            
-            # send the date (if it is required) 
+
+            # send the date (if it is required)
             if printDate:
                 # isolate the day from html item and add the * at the beginng to start the bold format
                 day = "*"+days[dayListCounter].get_text().splitlines()[0].split(" ")[0].upper()
@@ -78,9 +78,13 @@ def sendForecastReport(url, numberOfDataToSend):
             hour = (p.find_all("td")[0].find_all("td")[0].get_text())
             temp =(p.find("td", class_="innerTableCell temperature tempwidth").find_all("div")[0].get_text()).splitlines()[0]
             text =(p.find("td", class_="innerTableCell PhenomenaSpecialTableCell phenomenafull").find_all("td")[0].get_text()).splitlines()[0]
-            
+
+            # add a zero in fron of temp to make it double digit if it is less than 10 degrees
+            if len(temp)==3:
+                temp='0'+temp
+
             # create a message with above info
-            message = hour + "\t" + temp+ "\t" + text
+            message = hour + "\t" + temp+ "\t"
 
             # check if we have emoji for the specific text and append it to the message
             if text in meteoEmojiDictionary:
@@ -95,15 +99,17 @@ def sendForecastReport(url, numberOfDataToSend):
             else:
                 logmessage = "Text "+text+" not found in dictionary."
                 slack.sendSlackMessage(configJson['LogBotToken'], configJson['LoggingChannel'],logmessage)
- 
+
+            message += "\t" + text
+
             # add row with the current forecast to the existing report
             forecastReport+=(message+'\n')
 
             # if the current hour is 23:00, then we should send the new date before we continue
             if hour == "23:00":
                 printDate = True
-            
-            # increase the counter and stop the loop if we sent the first 8 rows 
+
+            # increase the counter and stop the loop if we sent the required rows
             sendMessageCounter+=1
             if sendMessageCounter == numberOfDataToSend:
                 break
