@@ -8,9 +8,12 @@ from lxml import html, etree
 import slackAPI as slack
 import json
 import sys
-from meteoStaticData import meteoEmojiDictionary, hourDayList
+from meteoStaticData import meteoRegionDict,meteoEmojiDictionary, hourDayList
 
 HEADERS = ({'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36','Accept-Language': 'en-US, en;q=0.5'})
+
+# counter variable to use it at showregions function
+count = 0
 
 # read config json file
 with open('meteoConfig.json') as f:
@@ -46,7 +49,7 @@ def sendForecastReport(url, numberOfDataToSend):
 
                 # isolate the number of month from html
                 numberOfMonth = ''.join(c for c in days[dayListCounter].get_text().splitlines()[0] if c.isdigit())
-                
+
                 # isolate the month from html and add the * to the end to terminate the bold format
                 month = days[dayListCounter].find("span",class_="monthNumbercf").get_text().replace(" ","")+"*"
 
@@ -104,26 +107,73 @@ def sendForecastReport(url, numberOfDataToSend):
         e = sys.exc_info()[0]
         slack.sendSlackMessage(configJson['ErrorBotToken'], configJson['LoggingChannel'],e)
 
+def helpMe():
+    slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],"How can i help you?")
+
+def showRegions():
+    # get region dict keys, which are the region names
+    keys = meteoRegionDict.keys()
+
+    # map them with a increment counter before the name
+    result = map(addCounter, keys) 
+
+    # create the respond message
+    resp = "The available regions are : \n\t\t" + "\n\t\t".join((list(result)))
+    slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],resp)
+
+def addCounter(n): 
+    global count
+    count = count + 1
+    return str(count) + ". " + n 
+
+def showRegionCities(regionCounter):
+    # check that region counter is valid
+    if regionCounter>0 and regionCounter<len(meteoRegionDict.keys()):
+        # get regions from dictionary
+        keys=list(meteoRegionDict.keys())
+
+        # get selected region
+        region = keys[(regionCounter-1)]
+
+        # create respond message
+        resp = "The available cities of " +region+" are :"
+        for k,v in sorted(meteoRegionDict[region].items()):
+            # for each row add new line and two tabs righter
+            resp+= '\n\t\t'
+            # add city id and name
+            resp+= ((' '*((3-len(v)+1)*2)).join((v,'\t'+k)))
+    else:
+        resp = "Invalid given region."
+    slack.sendSlackMessage(configJson['MeteoBotToken'], configJson['MeteoChannel'],resp)
+
 if __name__ == '__main__':
-    if len(sys.argv)==3:
+    if len(sys.argv)==4 and sys.argv[1]=="meteo":
         # get the first argument as city id
-        cityId = sys.argv[1]
+        cityId = sys.argv[2]
 
         # get the second argument as number of days to get the forecast
-        daysToScrape = int(sys.argv[2])
-        
+        daysToScrape = int(sys.argv[3])
+
         # create meteo url
         url= 'https://www.meteo.gr/cf.cfm?city_id='+cityId
-        
+
         # each day have 8 row of data
         numberOfDataToSend = 8*daysToScrape
-        
+
         # meteo have forecast data only for the next 5 days
         if numberOfDataToSend>43:
             numberOfDataToSend = 43
+
+        # call function to scrape data from meteo
+        sendForecastReport(url,numberOfDataToSend)
+    elif len(sys.argv)==2 and sys.argv[1]=="helpme":
+        helpMe()
+    elif len(sys.argv)==2 and sys.argv[1]=="showregions":
+        showRegions()
+    elif len(sys.argv)==3 and sys.argv[1]=="showregioncities":
+        showRegionCities(int(sys.argv[2]))
     else:
         url = 'https://www.meteo.gr/cf.cfm?city_id=89'
         numberOfDataToSend = 8
-
-    # call function to scrape data from meteo
-    sendForecastReport(url,numberOfDataToSend)
+        # call function to scrape data from meteo
+        sendForecastReport(url,numberOfDataToSend)
