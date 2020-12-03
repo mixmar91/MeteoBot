@@ -25,6 +25,9 @@ def sendForecastReport(url, numberOfDataToSend):
         page = requests.get(url, headers=HEADERS)
         soup = BeautifulSoup(page.content, features="lxml")
 
+        # get the name of the selected city
+        city = soup.find("h1", class_="cityname").get_text()
+        
         # get a list of days
         days = (soup.find("div", id="prognoseis").find_all("td", class_="forecastDate"))
         dayListCounter = 0
@@ -37,7 +40,7 @@ def sendForecastReport(url, numberOfDataToSend):
         sendMessageCounter = 0
 
         # declare a variable for the forecast report
-        forecastReport = ""
+        forecastReport = "*"+city+"*\n"
 
         # loop all the forecast data
         for p in prognostika:
